@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
@@ -24,35 +24,32 @@ interface GalleryProps {
 const Gallery = ({ onOpenSettings }: GalleryProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showFloatingSearch, setShowFloatingSearch] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollY = useRef(0);
   const { settings } = useSettings();
 
-  const handleScroll = useCallback(() => {
-    const currentScrollY = window.scrollY;
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
 
-    // Show floating search when scrolled down a bit
-    if (currentScrollY > 200) {
-      setIsScrolled(true);
+      if (currentScrollY > 200) {
+        setIsScrolled(true);
 
-      // Only show floating search if scrolled down more than 100px from last position
-      if (currentScrollY > lastScrollY + 100) {
-        setShowFloatingSearch(true);
-      } else if (lastScrollY > currentScrollY + 10) {
-        // Hide when scrolling up
+        if (currentScrollY > lastScrollY.current + 100) {
+          setShowFloatingSearch(true);
+        } else if (lastScrollY.current > currentScrollY + 10) {
+          setShowFloatingSearch(false);
+        }
+      } else {
+        setIsScrolled(false);
         setShowFloatingSearch(false);
       }
-    } else {
-      setIsScrolled(false);
-      setShowFloatingSearch(false);
-    }
 
-    setLastScrollY(currentScrollY);
-  }, [lastScrollY]);
+      lastScrollY.current = currentScrollY;
+    };
 
-  useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+  }, []);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -151,19 +148,21 @@ const Gallery = ({ onOpenSettings }: GalleryProps) => {
       </AnimatePresence>
 
       <main className="flex-grow relative pt-12 pb-12 md:pt-16">
-        {/* Main Search bar - Only show when not scrolled */}
-        {!isScrolled && (
-          <div className="relative z-10 px-4 mb-8">
-            <SearchBar
-              onSearchPhotos={searchPhotos}
-              onSearchVideos={searchVideos}
-              onCurated={getCuratedPhotos}
-              onPopularVideos={getPopularVideos}
-              contentType={contentType}
-              loading={loading}
-            />
-          </div>
-        )}
+        {/* Main Search bar - fade out when scrolled */}
+        <div
+          className={`relative z-10 px-4 mb-8 transition-all duration-300 ease-out ${
+            isScrolled ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          <SearchBar
+            onSearchPhotos={searchPhotos}
+            onSearchVideos={searchVideos}
+            onCurated={getCuratedPhotos}
+            onPopularVideos={getPopularVideos}
+            contentType={contentType}
+            loading={loading}
+          />
+        </div>
 
         {/* Content grid */}
         <div className="relative px-4">

@@ -60,7 +60,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             placeholder={`Search ${contentType}...`}
             disabled={loading}
             className="w-full py-3 text-sm sm:text-base bg-transparent text-white placeholder-white/50 border-0 border-b border-white/20 focus:border-white/60 focus:outline-none focus:ring-0 disabled:opacity-40 font-light tracking-wide"
-            autoFocus={floating}
           />
           <button
             type="submit"
