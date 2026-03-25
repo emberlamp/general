@@ -79,8 +79,7 @@ src/
 ├── pages/          # Page components
 ├── hooks/          # Custom hooks
 ├── context/        # React context
-├── types/          # TypeScript types
-└── config/         # Configuration files
+└── types/          # TypeScript types
 ```
 
 ## License
