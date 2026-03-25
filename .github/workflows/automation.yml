@@ -1,0 +1,142 @@
+name: Automation
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        default: 'sync'
+        type: choice
+        options:
+          - sync
+          - report
+          - all
+
+env:
+  ORG: emberlamp
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'sync' || github.event.inputs.action == 'all' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: pip install requests pyyaml
+
+      - name: Compare repos
+        run: |
+          python3 << 'PYEOF'
+          import requests
+          import os
+          
+          org = os.environ.get('ORG', 'emberlamp')
+          token = os.environ.get('GH_TOKEN', '')
+          headers = {'Authorization': f'token {token}'} if token else {}
+          
+          # Get config repos
+          config_resp = requests.get(
+            'https://raw.githubusercontent.com/' + org + '/config/main/repos.json',
+            headers=headers
+          )
+          config_repos = sorted(config_resp.json().get('repos', []))
+          
+          # Get GitHub repos
+          gh_resp = requests.get(
+            'https://api.github.com/orgs/' + org + '/repos',
+            headers=headers
+          )
+          gh_repos = sorted([r['name'] for r in gh_resp.json()])
+          
+          print('Config repos ({0}): {1}'.format(len(config_repos), config_repos))
+          print('GitHub repos ({0}): {1}'.format(len(gh_repos), gh_repos))
+          
+          if config_repos == gh_repos:
+            print('REPOS_IN_SYNC=true')
+          else:
+            print('REPOS_IN_SYNC=false')
+            missing = set(config_repos) - set(gh_repos)
+            extra = set(gh_repos) - set(config_repos)
+            if missing:
+              print('Missing in GitHub: ' + str(missing))
+            if extra:
+              print('Extra in GitHub: ' + str(extra))
+          PYEOF
+
+      - name: Report status
+        run: |
+          echo "Sync check complete"
+
+  report:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'report' || github.event.inputs.action == 'all' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate report
+        run: |
+          python3 << 'PYEOF'
+          import requests
+          import os
+          from datetime import datetime
+          
+          org = os.environ.get('ORG', 'emberlamp')
+          token = os.environ.get('GH_TOKEN', '')
+          headers = {'Authorization': 'token ' + token} if token else {}
+          
+          # Get repos
+          repos_resp = requests.get(
+            'https://api.github.com/orgs/' + org + '/repos',
+            headers=headers
+          )
+          repos = repos_resp.json()
+          
+          report = []
+          report.append('# Emberlamp Organization Report')
+          report.append('')
+          report.append('Generated: ' + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+          report.append('')
+          report.append('## Summary')
+          report.append('- Repositories: ' + str(len(repos)))
+          report.append('')
+          report.append('## Repositories')
+          
+          for repo in repos:
+            name = repo['name']
+            url = repo['html_url']
+            report.append('- [' + name + '](' + url + ')')
+          
+          report_text = '\n'.join(report)
+          
+          with open('report.md', 'w') as f:
+            f.write(report_text)
+          
+          print(report_text)
+          print('')
+          print('Report saved to report.md')
+          PYEOF
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: org-report
+          path: report.md
+          retention-days: 7
