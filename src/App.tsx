@@ -102,9 +102,10 @@ const Gallery = ({ onOpenSettings }: GalleryProps) => {
       {/* Floating Search Bar */}
       <AnimatePresence>
         {isScrolled && settings.showFloatingSearch && showFloatingSearch && (
-          <div className="fixed inset-0 z-30 flex justify-center" onClick={() => setShowFloatingSearch(false)}>
+          <div className="fixed inset-0 z-30 flex justify-center pointer-events-none" onClick={() => setShowFloatingSearch(false)}>
               <motion.div
-              className="absolute top-32 left-1/2 -translate-x-1/2 max-w-2xl cursor-move"
+              className="absolute top-32 max-w-2xl w-[calc(100%-2rem)] sm:w-auto cursor-move pointer-events-auto"
+              style={{ left: '50%', willChange: 'transform' }}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -119,6 +120,14 @@ const Gallery = ({ onOpenSettings }: GalleryProps) => {
               }}
               dragElastic={0.1}
               whileDrag={{ scale: 1.02, rotate: 1 }}
+              onDragStart={() => {
+                document.body.style.userSelect = 'none';
+                document.body.style.webkitUserSelect = 'none';
+              }}
+              onDragEnd={() => {
+                document.body.style.userSelect = 'auto';
+                document.body.style.webkitUserSelect = 'auto';
+              }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="bg-black/90 backdrop-blur-md rounded-lg shadow-2xl border border-white/20 overflow-hidden">
@@ -151,19 +160,22 @@ const Gallery = ({ onOpenSettings }: GalleryProps) => {
       </AnimatePresence>
 
       <main className="flex-grow relative pt-12 pb-12 md:pt-16">
-        {/* Main Search bar - Only show when not scrolled */}
-        {!isScrolled && (
-          <div className="relative z-10 px-4 mb-8">
-            <SearchBar
-              onSearchPhotos={searchPhotos}
-              onSearchVideos={searchVideos}
-              onCurated={getCuratedPhotos}
-              onPopularVideos={getPopularVideos}
-              contentType={contentType}
-              loading={loading}
-            />
-          </div>
-        )}
+        {/* Main Search bar - Fade out when scrolling */}
+        <motion.div
+          initial={{ opacity: 1 }}
+          animate={{ opacity: isScrolled ? 0 : 1 }}
+          transition={{ duration: 0.2 }}
+          className="relative z-10 px-4 mb-8"
+        >
+          <SearchBar
+            onSearchPhotos={searchPhotos}
+            onSearchVideos={searchVideos}
+            onCurated={getCuratedPhotos}
+            onPopularVideos={getPopularVideos}
+            contentType={contentType}
+            loading={loading}
+          />
+        </motion.div>
 
         {/* Content grid */}
         <div className="relative px-4">
