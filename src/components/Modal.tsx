@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
 import { PexelsPhoto, PexelsVideo } from '../types/pexels';
 
@@ -17,6 +17,8 @@ export const Modal: React.FC<ModalProps> = ({
   video,
   contentType,
 }) => {
+  const [downloading, setDownloading] = useState(false);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -31,10 +33,35 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setDownloading(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
+  };
+
+  const handleDownload = async (url: string, filename: string) => {
+    setDownloading(true);
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+    setDownloading(false);
   };
 
   return (
@@ -76,14 +103,14 @@ export const Modal: React.FC<ModalProps> = ({
 
         {contentType === 'photos' && photo && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-            <a
-              href={photo.src.original}
-              download
-              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-full text-white text-sm transition"
+            <button
+              onClick={() => handleDownload(photo.src.original, `pexels-${photo.id}.jpg`)}
+              disabled={downloading}
+              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-full text-white text-sm transition disabled:opacity-50"
             >
               <Download size={16} />
-              Download
-            </a>
+              {downloading ? 'Downloading...' : 'Download'}
+            </button>
           </div>
         )}
       </div>
