@@ -1,0 +1,53 @@
+# Labeler configuration for General app
+
+# UI/Frontend
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/**'
+          - '*.tsx'
+          - '*.ts'
+          - '*.css'
+          - '*.html'
+          - 'index.html'
+
+# Dependencies
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'package-lock.json'
+
+# Config
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.config.*'
+          - 'tailwind.config.*'
+          - 'vite.config.*'
+          - 'tsconfig.*'
+          - 'postcss.config.*'
+          - 'eslint.config.*'
+
+# Public assets
+assets:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'public/**'
+
+# Bug fix
+bug:
+  - head-branch:
+      - '/^fix\/.*/'
+
+# Feature
+feature:
+  - head-branch:
+      - '/^feat\/.*/'
+
+# Documentation
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.md'
+          - '!package.json'
