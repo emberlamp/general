@@ -16,6 +16,7 @@ jobs:
 
       - name: Add app label
         run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "app:general"
+          gh label create "app:general" --repo "${{ github.repository }}" --force 2>/dev/null || true
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "app:general" --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
