@@ -6,10 +6,12 @@ interface SettingsModalProps {
   settings: {
     showScrollToTop: boolean;
     showFloatingSearch: boolean;
+    showVoiceSearch: boolean;
   };
   onSettingsChange: (settings: { 
     showScrollToTop: boolean;
     showFloatingSearch: boolean;
+    showVoiceSearch: boolean;
   }) => void;
 }
 
@@ -79,6 +81,24 @@ const SettingsModal = ({ isOpen, onClose, settings, onSettingsChange }: Settings
                   className="sr-only peer"
                   checked={localSettings.showFloatingSearch}
                   onChange={(e) => handleChange('showFloatingSearch', e.target.checked)}
+                />
+                <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/20 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-white/20"></div>
+              </label>
+            </div>
+
+            <div className="h-px bg-white/10"></div>
+
+            <div className="flex items-center justify-between py-2">
+              <div className="pr-4">
+                <h3 className="text-sm font-normal text-white">Voice search</h3>
+                <p className="text-xs text-white/50 mt-0.5">Enable microphone for search</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={localSettings.showVoiceSearch}
+                  onChange={(e) => handleChange('showVoiceSearch', e.target.checked)}
                 />
                 <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/20 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-white/20"></div>
               </label>

@@ -1,8 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface Settings {
   showScrollToTop: boolean;
   showFloatingSearch: boolean;
+  showVoiceSearch: boolean;
 }
 
 interface SettingsContextType {
@@ -13,6 +15,7 @@ interface SettingsContextType {
 const defaultSettings: Settings = {
   showScrollToTop: false,
   showFloatingSearch: false,
+  showVoiceSearch: true,
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -53,6 +56,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         setSettings({
           showScrollToTop: rest.showScrollToTop ?? defaultSettings.showScrollToTop,
           showFloatingSearch: rest.showFloatingSearch ?? defaultSettings.showFloatingSearch,
+          showVoiceSearch: rest.showVoiceSearch ?? defaultSettings.showVoiceSearch,
         });
         // Save cleaned settings back to localStorage
         if (showBattery !== undefined) {
