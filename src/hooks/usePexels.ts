@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from 'react';
 import { createClient } from 'pexels';
 import { PexelsPhoto, PexelsVideo } from '../types/pexels';

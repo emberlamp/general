@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, X, Mic, MicOff } from 'lucide-react';
+import { useVoiceRecognition } from '../hooks/useVoiceRecognition';
+import { useSettings } from '../context/SettingsContext';
 
 interface SearchBarProps {
   onSearchPhotos: (query: string) => void;
@@ -23,16 +25,45 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onClose,
 }) => {
   const [query, setQuery] = useState('');
+  const { settings } = useSettings();
+  const { transcript, isListening, startListening, stopListening, resetTranscript, isSupported } = useVoiceRecognition();
+
+  useEffect(() => {
+    if (transcript) {
+      setQuery(transcript);
+    }
+  }, [transcript]);
+
+  const handleVoiceToggle = () => {
+    if (isListening) {
+      stopListening();
+      const searchQuery = transcript || query;
+      const trimmed = searchQuery.trim();
+      if (trimmed) {
+        if (contentType === 'photos') {
+          onSearchPhotos(trimmed);
+        } else {
+          onSearchVideos(trimmed);
+        }
+      }
+    } else {
+      resetTranscript();
+      startListening();
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
     const trimmed = query.trim();
     if (!trimmed) return;
     
-    // Force a small delay to ensure state updates before search
     requestAnimationFrame(() => {
-      contentType === 'photos' ? onSearchPhotos(trimmed) : onSearchVideos(trimmed);
+      if (contentType === 'photos') {
+        onSearchPhotos(trimmed);
+      } else {
+        onSearchVideos(trimmed);
+      }
     });
   };
 
@@ -61,6 +92,23 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             disabled={loading}
             className="w-full py-3 text-sm sm:text-base bg-transparent text-white placeholder-white/50 border-0 border-b border-white/20 focus:border-white/60 focus:outline-none focus:ring-0 disabled:opacity-40 font-light tracking-wide"
           />
+          {isSupported && settings.showVoiceSearch && (
+            <button
+              type="button"
+              onClick={handleVoiceToggle}
+              disabled={loading}
+              className={`absolute right-8 top-1/2 -translate-y-1/2 transition-colors ${
+                isListening ? 'text-red-400' : 'text-white/50'
+              } disabled:cursor-default disabled:text-white/20`}
+              aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
+            >
+              {isListening ? (
+                <Mic size={18} strokeWidth={1.5} className="animate-pulse" />
+              ) : (
+                <MicOff size={18} strokeWidth={1.5} />
+              )}
+            </button>
+          )}
           <button
             type="submit"
             disabled={loading}
@@ -116,7 +164,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     return (
       <div 
         className="w-full"
-        onClick={e => e.stopPropagation()} // Prevent click from closing the search
+        onClick={e => e.stopPropagation()}
       >
         {SearchBarContent}
       </div>

@@ -75,6 +75,7 @@ const Gallery = ({ onOpenSettings }: GalleryProps) => {
     if (location.pathname === '/') {
       getCuratedPhotos();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   const handleItemClick = (photo?: PexelsPhoto, video?: PexelsVideo) => {

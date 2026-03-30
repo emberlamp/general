@@ -8,7 +8,7 @@ General is a web application for browsing and discovering high-quality photos an
 
 ## Features
 
-General includes a photo gallery with curated photos from Pexels, a video collection featuring trending videos, search functionality to find specific content, download capability for saving favorite images and videos, responsive design that works seamlessly on all devices, a dark theme that is easy on the eyes, floating search for quick access when scrolling, scroll to top button for easy navigation, and preferences to customize your experience.
+General includes a photo gallery with curated photos from Pexels, a video collection featuring trending videos, search functionality to find specific content, voice search support, download capability for saving favorite images and videos, responsive design that works seamlessly on all devices, a dark theme that is easy on the eyes, floating search for quick access when scrolling, scroll to top button for easy navigation, and preferences to customize your experience.
 
 ## Tech Stack
 
