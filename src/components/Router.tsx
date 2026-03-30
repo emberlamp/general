@@ -29,7 +29,7 @@ export const Router: React.FC<RouterProps> = ({ children }) => {
   };
 
   // Make navigate function available globally
-  (window as any).navigate = navigate;
+  (window as unknown as { navigate?: typeof navigate }).navigate = navigate;
 
   const renderPage = () => {
     switch (currentPath) {
