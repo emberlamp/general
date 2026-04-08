@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import type { User } from '@supabase/supabase-js';
 import ScrollToTop from './components/ScrollToTop';
 import SettingsModal from './components/SettingsModal';
 import { SearchBar } from './components/SearchBar';
@@ -15,13 +17,16 @@ import { CookiePolicy } from './pages/CookiePolicy';
 import { UsageGuidelines } from './pages/UsageGuidelines';
 import { AttributionInfo } from './pages/AttributionInfo';
 import { Support } from './pages/Support';
+import { Auth } from './pages/Auth';
 
 // Main Gallery Component
 interface GalleryProps {
   onOpenSettings: () => void;
+  user: User | null;
+  onSignOut: () => Promise<void>;
 }
 
-const Gallery = ({ onOpenSettings }: GalleryProps) => {
+const Gallery = ({ onOpenSettings, user, onSignOut }: GalleryProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showFloatingSearch, setShowFloatingSearch] = useState(false);
   const lastScrollY = useRef(0);
@@ -313,6 +318,25 @@ const Gallery = ({ onOpenSettings }: GalleryProps) => {
                 © {new Date().getFullYear()}
               </div>
 
+              {/* Auth */}
+              <div className="flex items-center space-x-6">
+                {user ? (
+                  <button
+                    onClick={onSignOut}
+                    className="text-white/40 hover:text-white text-xs font-light transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => navigateTo('auth')}
+                    className="text-white/40 hover:text-white text-xs font-light transition-colors"
+                  >
+                    Sign In
+                  </button>
+                )}
+              </div>
+
               {/* Settings */}
               <div className="flex items-center space-x-6">
                 <button
@@ -347,6 +371,7 @@ const Gallery = ({ onOpenSettings }: GalleryProps) => {
 
 const AppContent = () => {
   const { settings, updateSettings } = useSettings();
+  const { user, signOut } = useAuth();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Handle settings change from modal
@@ -363,7 +388,7 @@ const AppContent = () => {
       <Routes>
         <Route
           path="/"
-          element={<Gallery onOpenSettings={() => setIsSettingsOpen(true)} />}
+          element={<Gallery onOpenSettings={() => setIsSettingsOpen(true)} user={user} onSignOut={signOut} />}
         />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
@@ -371,6 +396,7 @@ const AppContent = () => {
         <Route path="/usage" element={<UsageGuidelines />} />
         <Route path="/attribution" element={<AttributionInfo />} />
         <Route path="/support" element={<Support />} />
+        <Route path="/auth" element={<Auth />} />
       </Routes>
 
       <SettingsModal
@@ -386,9 +412,11 @@ const AppContent = () => {
 function App() {
   return (
     <Router>
-      <SettingsProvider>
-        <AppContent />
-      </SettingsProvider>
+      <AuthProvider>
+        <SettingsProvider>
+          <AppContent />
+        </SettingsProvider>
+      </AuthProvider>
     </Router>
   );
 }
